@@ -1,6 +1,5 @@
 // src/pages/api/register/finish.ts
 
-// ✅ حل مشكلة Astro: لازم نمنع التوليد المسبق للصفحة (Static)
 export const prerender = false;
 
 import { Elysia } from 'elysia';
@@ -11,36 +10,42 @@ const app = new Elysia();
 app.post('/api/register/finish', async ({ request, cookie, set }) => {
   const sessionId = cookie.sessionId?.value;
 
-  // ❌ لو مفيش session
-  if (!sessionId || !sessions[sessionId]) {
+  // 🔐 تأكد من وجود session صالحة
+  const session = sessionId && sessions[sessionId];
+  if (!session) {
     set.status = 401;
     return { error: 'Unauthorized. No session found.' };
   }
 
-  // ✅ جلب بيانات الـ session
-  const session = sessions[sessionId];
+  try {
+    const body = await request.json();
+    const { credentialId, userId } = body;
 
-  // 🧹 حذف الـ session بعد الاستخدام
-  delete sessions[sessionId];
+    // ⛔ التحقق من صحة المدخلات
+    if (typeof credentialId !== 'string' || typeof userId !== 'string') {
+      set.status = 400;
+      return { error: 'Missing or invalid credentialId or userId.' };
+    }
 
-  // 📦 قراءة بيانات الـ credential من البودي
-  const body = await request.json();
-  const { credentialId, userId } = body;
+    // 📝 تخزين بيانات الـ credential
+    credentials[credentialId] = {
+      userId,
+      challenge: session.challenge.toString('base64'),
+      registeredAt: Date.now(),
+    };
 
-  if (!credentialId || !userId) {
-    set.status = 400;
-    return { error: 'Missing credential data.' };
+    // 🧹 إزالة الجلسة بعد الاستخدام
+    delete sessions[sessionId];
+
+    return {
+      success: true,
+      message: '✅ Credential registered successfully',
+    };
+  } catch (err) {
+    set.status = 500;
+    return { error: '❌ Internal server error.' };
   }
-
-  // 📝 حفظ الـ credential
-  credentials[credentialId] = {
-    userId,
-    challenge: session.challenge.toString('base64'),
-    registeredAt: Date.now(),
-  };
-
-  return { success: true, message: 'Credential registered successfully ✅' };
 });
 
-// 🚀 ربط Elysia بالـ route handler بتاع Astro
+// 🚀 ربط Elysia بالـ Astro handler
 export const POST = (context) => app.handle(context.request);

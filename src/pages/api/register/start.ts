@@ -1,7 +1,12 @@
+// src/pages/api/register/start.ts
+
 import { Elysia } from "elysia";
 import { randomBytes } from "crypto";
 import { sessions, rateLimitStore } from "../../../lib/storage";
 import { securityMiddleware } from "../../../middleware/security";
+
+// ✅ حل مشكلة Astro
+export const prerender = false;
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 10;
@@ -12,6 +17,7 @@ const app = new Elysia()
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const now = Date.now();
 
+    // 📌 Rate limiting check
     if (!rateLimitStore[ip]) {
       rateLimitStore[ip] = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
     } else {
@@ -28,12 +34,23 @@ const app = new Elysia()
       }
     }
 
+    // 🔐 Generate session + challenge
     const sessionId = crypto.randomUUID();
     const challenge = randomBytes(32);
     const userId = Buffer.from("user-id");
 
-    sessions[sessionId] = { challenge, userId, expires: now + 600_000 };
+    // ⏱️ Store session in-memory
+    sessions[sessionId] = {
+      challenge,
+      userId,
+      expires: now + 600_000, // 10 mins
+    };
 
+    // ✅ Debug logs
+    console.log("📦 New session created:", sessionId);
+    console.log("🧠 All sessions now:", Object.keys(sessions));
+
+    // 🍪 Set sessionId in cookies
     cookie.sessionId.set({
       value: sessionId,
       httpOnly: true,
@@ -42,6 +59,7 @@ const app = new Elysia()
       maxAge: 600,
     });
 
+    // ✅ Return challenge options
     return {
       challenge: challenge.toString("base64"),
       rp: { name: "MyApp" },
@@ -56,4 +74,5 @@ const app = new Elysia()
     };
   });
 
+// Export GET handler to be used by Astro
 export const GET = (context) => app.handle(context.request);
