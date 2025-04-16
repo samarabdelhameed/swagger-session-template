@@ -1,0 +1,30 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cvuhv55fchh2dtob9kc0",
+    "operations": [
+      {
+        "add_column": {
+          "up": "''",
+          "table": "passkey_sessions",
+          "column": {
+            "name": "userId",
+            "type": "text",
+            "comment": "{\"xata.link\":\"users\"}",
+            "references": {
+              "name": "userId_link",
+              "table": "users",
+              "column": "userId",
+              "on_delete": "SET NULL"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cvuhv55fchh2dtob9kc0",
+  "parent": "mig_cvuhug5fchh2dtob9kb0",
+  "schema": "public",
+  "startedAt": "2025-04-14T14:45:41.26943Z"
+}

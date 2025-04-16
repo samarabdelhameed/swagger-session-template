@@ -1,0 +1,25 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cvuhqktfchh2dtob9k70",
+    "operations": [
+      {
+        "add_column": {
+          "up": "''",
+          "table": "passkey_sessions",
+          "column": {
+            "name": "sessionId",
+            "type": "text",
+            "unique": true,
+            "comment": ""
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cvuhqktfchh2dtob9k70",
+  "parent": "mig_cvuhpp5fchh2dtob9k40",
+  "schema": "public",
+  "startedAt": "2025-04-14T14:36:03.661067Z"
+}

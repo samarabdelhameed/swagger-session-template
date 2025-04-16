@@ -2,10 +2,10 @@
 
 import { Elysia } from "elysia";
 import { randomBytes } from "crypto";
-import { sessions, rateLimitStore } from "../../../lib/storage";
+import { rateLimitStore } from "../../../lib/storage";
 import { securityMiddleware } from "../../../middleware/security";
+import { getXataClient } from "../../../xata";
 
-// ✅ حل مشكلة Astro
 export const prerender = false;
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -13,7 +13,7 @@ const RATE_LIMIT_MAX = 10;
 
 const app = new Elysia()
   .use(securityMiddleware)
-  .get("/api/register/start", ({ request, cookie, set }) => {
+  .get("/api/register/start", async ({ request, cookie, set }) => {
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const now = Date.now();
 
@@ -36,35 +36,39 @@ const app = new Elysia()
 
     // 🔐 Generate session + challenge
     const sessionId = crypto.randomUUID();
-    const challenge = randomBytes(32);
-    const userId = Buffer.from("user-id");
+    const challenge = randomBytes(32).toString("base64");
+    const userId = crypto.randomUUID();
 
-    // ⏱️ Store session in-memory
-    sessions[sessionId] = {
+    // ✅ Store session in Xata
+    const db = getXataClient();
+    await db.passkey_sessions.create({
+      sessionId,
       challenge,
       userId,
-      expires: now + 600_000, // 10 mins
-    };
+      expiresAt: new Date(now + 600_000), // 10 mins
+      createdAt: new Date(),
+    });
 
-    // ✅ Debug logs
-    console.log("📦 New session created:", sessionId);
-    console.log("🧠 All sessions now:", Object.keys(sessions));
+    // 🍪 Set sessionId in cookies (dynamic secure flag)
+    const isProduction = process.env.NODE_ENV === "production";
 
-    // 🍪 Set sessionId in cookies
     cookie.sessionId.set({
       value: sessionId,
       httpOnly: true,
-      secure: true,
+      secure: isProduction, // ✅ only secure in production
       sameSite: "strict",
       maxAge: 600,
     });
 
     // ✅ Return challenge options
     return {
-      challenge: challenge.toString("base64"),
-      rp: { name: "MyApp" },
+      challenge,
+      rp: {
+        name: "MyApp",
+        id: "localhost", // required by WebAuthn
+      },
       user: {
-        id: userId,
+        id: Buffer.from(userId),
         name: "user@example.com",
         displayName: "User Name",
       },
@@ -74,5 +78,4 @@ const app = new Elysia()
     };
   });
 
-// Export GET handler to be used by Astro
 export const GET = (context) => app.handle(context.request);

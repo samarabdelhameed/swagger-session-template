@@ -2,50 +2,74 @@
 
 export const prerender = false;
 
-import { Elysia } from 'elysia';
-import { sessions, credentials } from '../../../lib/storage';
+import { Elysia } from "elysia";
+import { getXataClient } from "../../../xata";
+import { securityMiddleware } from "../../../middleware/security";
 
-const app = new Elysia();
+const app = new Elysia().use(securityMiddleware);
 
-app.post('/api/register/finish', async ({ request, cookie, set }) => {
+app.post("/api/register/finish", async ({ request, cookie, set }) => {
   const sessionId = cookie.sessionId?.value;
 
-  // 🔐 تأكد من وجود session صالحة
-  const session = sessionId && sessions[sessionId];
-  if (!session) {
+  if (!sessionId) {
     set.status = 401;
-    return { error: 'Unauthorized. No session found.' };
+    return { error: "No sessionId in cookie" };
+  }
+
+  const db = getXataClient();
+  const sessionRecord = await db.passkey_sessions
+    .filter({ sessionId })
+    .getFirst();
+
+  // 🔐 Check if session exists
+  if (!sessionRecord) {
+    set.status = 401;
+    return { error: "Session not found or expired" };
   }
 
   try {
     const body = await request.json();
-    const { credentialId, userId } = body;
+    const { credentialId, publicKey } = body;
 
-    // ⛔ التحقق من صحة المدخلات
-    if (typeof credentialId !== 'string' || typeof userId !== 'string') {
+    // ⛔ Validate input
+    if (
+      typeof credentialId !== "string" ||
+      typeof publicKey !== "string"
+    ) {
       set.status = 400;
-      return { error: 'Missing or invalid credentialId or userId.' };
+      return {
+        error: "Missing or invalid credentialId or publicKey.",
+      };
     }
 
-    // 📝 تخزين بيانات الـ credential
-    credentials[credentialId] = {
-      userId,
-      challenge: session.challenge.toString('base64'),
-      registeredAt: Date.now(),
-    };
+    // ✅ Store credential in users table
+    const user = await db.users
+      .filter({ xata_id: sessionRecord.userId })
+      .getFirst();
 
-    // 🧹 إزالة الجلسة بعد الاستخدام
-    delete sessions[sessionId];
+    if (!user) {
+      set.status = 404;
+      return { error: "User not found for this session." };
+    }
+
+    await db.users.update(user.id, {
+      credential_id: credentialId,
+      public_key: publicKey,
+      challenge: sessionRecord.challenge,
+    });
+
+    // 🧹 Delete session from Xata
+    await db.passkey_sessions.delete(sessionRecord.id);
 
     return {
       success: true,
-      message: '✅ Credential registered successfully',
+      message: "✅ Credential registered and user updated successfully.",
     };
   } catch (err) {
+    console.error("❌ Error:", err);
     set.status = 500;
-    return { error: '❌ Internal server error.' };
+    return { error: "❌ Internal server error." };
   }
 });
 
-// 🚀 ربط Elysia بالـ Astro handler
 export const POST = (context) => app.handle(context.request);

@@ -10,6 +10,7 @@
         "@elysiajs/swagger": "^1.2.2",
         "@tailwindcss/vite": "^4.0.17",
         "@types/canvas-confetti": "^1.9.0",
+        "@xata.io/client": "^0.0.0-next.v93343b9646f57a1e5c51c35eccf0767c2bb80baa",
         "astro": "^5.6.1",
         "canvas-confetti": "^1.9.3",
         "elysia": "^1.2.25",
@@ -328,6 +329,8 @@
     "@vercel/routing-utils": ["@vercel/routing-utils@5.0.4", "", { "dependencies": { "path-to-regexp": "6.1.0", "path-to-regexp-updated": "npm:path-to-regexp@6.3.0" }, "optionalDependencies": { "ajv": "^6.12.3" } }, "sha512-4ke67zkXVi2fRZdoYckABcsSkRC9CnrdadOGxoS/Bk22+ObHjGQWvUHExRSXh339anwu9YY7ZacNSGH4gUnTQA=="],
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@4.3.4", "", { "dependencies": { "@babel/core": "^7.26.0", "@babel/plugin-transform-react-jsx-self": "^7.25.9", "@babel/plugin-transform-react-jsx-source": "^7.25.9", "@types/babel__core": "^7.20.5", "react-refresh": "^0.14.2" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0" } }, "sha512-SCCPBJtYLdE8PX/7ZQAs1QAZ8Jqwih+0VBLum1EGqmCCQal+MIUqLCzj3ZUy8ufbC0cAM4LRlSTm7IQJwWT4ug=="],
+
+    "@xata.io/client": ["@xata.io/client@0.0.0-next.v93343b9646f57a1e5c51c35eccf0767c2bb80baa", "", { "peerDependencies": { "typescript": ">=4.5" } }, "sha512-4Js4SAKwmmOPmZVIS1l2K8XVGGkUOi8L1jXuagDfeUX56n95wfA4xYMSmsVS0RLMmRWI4UM4bp5UcFJxwbFYGw=="],
 
     "abbrev": ["abbrev@3.0.1", "", {}, "sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg=="],
 

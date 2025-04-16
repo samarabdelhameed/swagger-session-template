@@ -16,6 +16,7 @@
     "@elysiajs/swagger": "^1.2.2",
     "@tailwindcss/vite": "^4.0.17",
     "@types/canvas-confetti": "^1.9.0",
+    "@xata.io/client": "^0.0.0-next.v93343b9646f57a1e5c51c35eccf0767c2bb80baa",
     "astro": "^5.6.1",
     "canvas-confetti": "^1.9.3",
     "elysia": "^1.2.25",

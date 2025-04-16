@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cvui0plfchh2dtob9kg0",
+    "operations": [
+      {
+        "add_column": {
+          "table": "passkey_sessions",
+          "column": {
+            "name": "createdAt",
+            "type": "timestamptz",
+            "comment": "",
+            "default": "now()"
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cvui0plfchh2dtob9kg0",
+  "parent": "mig_cvui0b5fchh2dtob9ke0",
+  "schema": "public",
+  "startedAt": "2025-04-14T14:49:11.354383Z"
+}

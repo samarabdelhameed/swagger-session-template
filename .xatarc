@@ -1,0 +1,6 @@
+{
+  "databaseURL": "https://passkey-auth-jmjui4.us-east-1.xata.sh/db/passkey_db",
+  "codegen": {
+    "output": "src/xata.ts"
+  }
+}

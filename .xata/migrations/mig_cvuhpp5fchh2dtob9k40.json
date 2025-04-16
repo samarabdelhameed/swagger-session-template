@@ -1,0 +1,57 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cvuhpp5fchh2dtob9k40",
+    "operations": [
+      {
+        "create_table": {
+          "name": "passkey_sessions",
+          "columns": [
+            {
+              "name": "xata_version",
+              "type": "integer",
+              "default": "0"
+            },
+            {
+              "name": "xata_createdat",
+              "type": "timestamptz",
+              "default": "now()"
+            },
+            {
+              "name": "xata_updatedat",
+              "type": "timestamptz",
+              "default": "now()"
+            },
+            {
+              "name": "xata_id",
+              "type": "text",
+              "check": {
+                "name": "passkey_sessions_xata_id_length_xata_id",
+                "constraint": "length(\"xata_id\") < 256"
+              },
+              "unique": true,
+              "default": "'rec_' || xata_private.xid()"
+            }
+          ]
+        }
+      },
+      {
+        "sql": {
+          "up": "ALTER TABLE \"passkey_sessions\" REPLICA IDENTITY FULL",
+          "onComplete": true
+        }
+      },
+      {
+        "sql": {
+          "up": "CREATE TRIGGER xata_maintain_metadata_trigger_pgroll\n  BEFORE INSERT OR UPDATE\n  ON \"passkey_sessions\"\n  FOR EACH ROW\n  EXECUTE FUNCTION xata_private.maintain_metadata_trigger_pgroll()",
+          "onComplete": true
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cvuhpp5fchh2dtob9k40",
+  "parent": "mig_cvuhp5t1cltn5mtpppfg",
+  "schema": "public",
+  "startedAt": "2025-04-14T14:34:13.587191Z"
+}
